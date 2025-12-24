@@ -105,6 +105,31 @@ stage('Plot Code Coverage Report') {
     }
 }
 
+stage('Package Artifact') {
+    steps {
+        dir("${WORKSPACE}") {
+            sh 'zip -qr php-todo.zip . -x "*.git*" "node_modules/*"'
+        }
+    }
+}
+stage('Upload Artifact to Artifactory') {
+    steps {
+        script {
+            def server = Artifactory.server 'artifactory-server'
+            def uploadSpec = """{
+                "files": [
+                    {
+                        "pattern": "php-todo.zip",
+                        "target": "php-todo-repo/php-todo/",
+                        "props": "type=zip;status=ready"
+                    }
+                ]
+            }"""
+            server.upload spec: uploadSpec
+        }
+    }
+}
+
     }
     
     post {
