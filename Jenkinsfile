@@ -72,8 +72,19 @@ stage('Code Analysis') {
     steps {
         dir("${WORKSPACE}") {
             sh '''
+                # Ensure we have write permissions
                 mkdir -p build/logs
+                chmod -R 755 build
+                
+                # Run phploc
+                echo "=== Running phploc analysis ==="
                 phploc app/ --log-csv build/logs/phploc.csv
+                
+                # Verify CSV was created
+                echo "=== Verifying CSV file ==="
+                ls -la build/logs/phploc.csv
+                echo "=== First 3 lines of CSV ==="
+                head -3 build/logs/phploc.csv
             '''
         }
     }
