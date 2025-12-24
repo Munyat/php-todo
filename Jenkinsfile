@@ -16,21 +16,20 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Munyat/php-todo.git'
             }
         }
-
 stage('Prepare Dependencies') {
     steps {
         dir("${WORKSPACE}") {
             // 1. Copy environment
             sh 'cp .env.sample .env'
             
-            // 2. Create directories
+            // 2. Create directories with proper permissions
             sh '''
                 mkdir -p bootstrap/cache
                 chmod 775 bootstrap/cache
                 mkdir -p storage/framework/{sessions,views,cache}
                 mkdir -p storage/logs
                 chmod -R 775 storage
-                // CRITICAL FIX: Ensure the sessions directory is writable
+                # CRITICAL FIX: Ensure the sessions directory is writable
                 chmod 777 storage/framework/sessions
             '''
             
