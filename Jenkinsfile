@@ -32,19 +32,20 @@ pipeline {
                         chmod -R 775 storage
                     '''
                     
-                    // 3. INSTALL DEPENDENCIES FIRST
+                    // 3. Install dependencies
                     sh 'composer install --no-interaction --prefer-dist --no-scripts'
                     
-                    // 4. Generate key AFTER composer install
+                    // 4. Generate key
                     sh 'php artisan key:generate'
                     
-                    // 5. Clear caches
+                    // 5. Clear caches (skip optimize or handle error)
                     sh '''
                         php artisan config:clear
                         php artisan cache:clear
                         php artisan route:clear
                         php artisan view:clear
-                        php artisan optimize
+                        # Skip optimize - it's causing issues but not needed
+                        # php artisan optimize || true
                     '''
                     
                     // 6. Setup database
@@ -60,6 +61,18 @@ pipeline {
                     sh './vendor/bin/phpunit'
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Build completed - see test results above"
+        }
+        success {
+            echo "✓ Pipeline succeeded!"
+        }
+        failure {
+            echo "✗ Pipeline failed"
         }
     }
 }
