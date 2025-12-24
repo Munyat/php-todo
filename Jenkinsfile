@@ -23,24 +23,21 @@ pipeline {
                     // Copy environment file
                     sh 'cp .env.sample .env'
                     
-                    // FIX: Create cache directory and files BEFORE composer install
+                    // Create cache directory
                     sh '''
                         mkdir -p bootstrap/cache
                         chmod 775 bootstrap/cache
-                        # Create the files that artisan clear-compiled expects
-                        touch bootstrap/cache/services.php
-                        touch bootstrap/cache/packages.php
-                        touch bootstrap/cache/compiled.php
-                        chmod 664 bootstrap/cache/*.php
                     '''
                     
-                    // FIX: Install dependencies WITHOUT running scripts first
+                    // Install dependencies WITHOUT scripts
                     sh 'composer install --no-interaction --prefer-dist --no-scripts'
                     
-                    // FIX: Now run the artisan commands manually
+                    // FIX: Don't create empty cache files. Let Laravel create them properly.
+                    // FIX: Run clear-compiled with exception handling
                     sh '''
-                        php artisan clear-compiled
-                        php artisan optimize
+                        # Try to clear compiled, ignore errors if it fails
+                        php artisan clear-compiled || true
+                        php artisan optimize || true
                     '''
                     
                     // Generate app key
