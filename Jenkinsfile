@@ -68,6 +68,16 @@ pipeline {
                 }
             }
         }
+stage('Code Analysis') {
+    steps {
+        dir("${WORKSPACE}") {
+            sh '''
+                mkdir -p build/logs
+                phploc app/ --log-csv build/logs/phploc.csv
+            '''
+        }
+    }
+}        
     }
     
     post {
