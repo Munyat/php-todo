@@ -138,6 +138,38 @@ stage('Deploy to Dev Environment') {
               wait: true
     }
 }
+        stage('SonarQube Quality Gate') {
+            // Only run for specific branches
+            when { 
+                branch pattern: "^develop*|^hotfix*|^release*|^main*|^master*", 
+                comparator: "REGEXP"
+            }
+            
+            steps {
+                // Run SonarQube analysis
+                withSonarQubeEnv('sonarqube') {
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dproject.settings=sonar-project.properties \
+                        -Dsonar.projectBaseDir=${WORKSPACE}
+                    """
+                }
+                
+                // Wait for Quality Gate result (max 1 minute)
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+            
+            post {
+                success {
+                    echo 'Quality Gate passed!'
+                }
+                failure {
+                    echo 'Quality Gate failed! Check SonarQube for details.'
+                }
+            }
+        }
 
     }
     
