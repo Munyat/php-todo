@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    environment {
+        // SonarQube Scanner tool (name must match Jenkins config)
+        SCANNER_HOME = tool 'SonarQubeScanner'
+        // Optional: If you want to use token authentication
+        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+    }
+
     stages {
 
         stage("Initial cleanup") {
